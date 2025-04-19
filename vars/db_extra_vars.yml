@@ -1,0 +1,40 @@
+---
+install_type: db
+
+postgresql_version_major: "16"
+postgresql_version_full: "16.8"
+
+packages_common:
+  - wget
+  - gnupg
+  - ca-certificates
+  - lsb-release
+  - software-properties-common
+  - acl
+  - python3-psycopg2  # required by Ansible postgresql modules
+  - tree
+  - vim
+  - git
+
+packages_postgres:
+  - postgresql-16=16.8*
+  - postgresql-client-16=16.8*
+  - postgresql-contrib-16  # no version pin
+
+db_name: "gitlabhq_production"
+db_user: "gitlab"
+db_user_pass: "gtt_pass"
+db_admin_user: "equintana"
+db_admin_pass: "gtt_pass"
+
+db_extensions:
+  - pg_trgm
+  - btree_gist
+  - plpgsql
+
+listen_addresses: "*"
+pg_hba_ipv4: "0.0.0.0/0"
+
+postgresql_apt_repo: "http://apt.postgresql.org/pub/repos/apt"
+pgdg_repo_key_url: "https://www.postgresql.org/media/keys/ACCC4CF8.asc"
+

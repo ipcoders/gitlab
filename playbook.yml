@@ -1,0 +1,9 @@
+---
+- name: Install GitLab PostgreSQL DB
+  hosts: localhost
+  become: true
+
+  roles:
+    - role: gitlab_db
+      when: install_type == 'db'
+
