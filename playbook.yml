@@ -1,9 +1,12 @@
 ---
-- name: Install GitLab PostgreSQL DB
+- name: Install GitLab PostgreSQL DB or GitLab App
   hosts: localhost
   become: true
 
   roles:
     - role: gitlab_db
       when: install_type == 'db'
+
+    - role: gitlab_app
+      when: install_type == 'app'
 

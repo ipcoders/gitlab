@@ -1,0 +1,38 @@
+# Role selector
+install_type: app
+
+packages_common:
+  - curl
+  - openssh-server
+  - ca-certificates
+  - tzdata
+  - acl
+  - git
+  - gpg
+  - software-properties-common
+  - python3-apt
+  
+# External PostgreSQL DB
+external_db_host: 172.31.0.100        
+external_db_user: gitlab
+external_db_pass: gtt_pass
+external_db_name: gitlabhq_production
+external_db_port: 5432
+
+# GitLab configuration
+gitlab_external_url: "https://52.90.166.156"  
+gitlab_edition: gitlab-ce
+gitlab_version: "17.11.0-ce.0"
+gitlab_apt_codename: jammy  
+
+# CLI SSH users
+app_users:
+  - equintana
+app_user_pass: gtt_pass
+
+# Optional: root user for GitLab web interface
+gitlab_root_password: gtt_pass
+
+# SSL certificate generation
+generate_gitlab_ssl: true
+

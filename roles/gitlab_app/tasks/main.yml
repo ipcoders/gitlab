@@ -1,3 +1,95 @@
-#SPDX-License-Identifier: MIT-0
 ---
-# tasks file for gitlab_app
+- name: Cleanup any previous GitLab installation
+  become: true
+  shell: |
+    gitlab-ctl stop || true
+    rm -rf /etc/gitlab /var/opt/gitlab /var/log/gitlab
+  args:
+    warn: false
+
+- name: Install required Ansible collections
+  ansible.builtin.command:
+    cmd: ansible-galaxy collection install -r requirements.yml
+  args:
+    chdir: "{{ playbook_dir }}"
+  changed_when: false
+
+- name: Ensure required common packages are installed
+  apt:
+    name: "{{ packages_common }}"
+    state: present
+    update_cache: true
+
+- name: Ensure GitLab certs directory exists
+  file:
+    path: /etc/gitlab/certs
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Generate GitLab private key
+  community.crypto.openssl_privatekey:
+    path: "/etc/gitlab/certs/{{ gitlab_external_url | urlsplit('hostname') }}.key"
+    size: 2048
+    type: RSA
+  when: generate_gitlab_ssl | default(true)
+
+- name: Generate self-signed certificate using existing key
+  community.crypto.x509_certificate:
+    path: "/etc/gitlab/certs/{{ gitlab_external_url | urlsplit('hostname') }}.crt"
+    privatekey_path: "/etc/gitlab/certs/{{ gitlab_external_url | urlsplit('hostname') }}.key"
+    provider: selfsigned
+    selfsigned_not_after: "+365d"
+  when: generate_gitlab_ssl | default(true)
+
+- name: Download GitLab GPG key (ASCII)
+  get_url:
+    url: https://packages.gitlab.com/gitlab/gitlab-ce/gpgkey
+    dest: /tmp/gitlab-ce.asc
+    mode: '0644'
+
+- name: Convert GitLab GPG key to binary format
+  command: >
+    gpg --dearmor -o /usr/share/keyrings/gitlab_gitlab-ce-archive-keyring.gpg /tmp/gitlab-ce.asc
+  args:
+    creates: /usr/share/keyrings/gitlab_gitlab-ce-archive-keyring.gpg
+
+- name: Add GitLab APT repository (UNSAFE - bypass GPG)
+  apt_repository:
+    repo: "deb [trusted=yes] https://packages.gitlab.com/gitlab/{{ gitlab_edition }}/ubuntu/ {{ gitlab_apt_codename | default(ansible_lsb.codename) }} main"
+    state: present
+    filename: gitlab
+    update_cache: true
+    validate_certs: no
+
+- name: Install GitLab CE pinned version
+  apt:
+    name: "{{ gitlab_edition }}={{ gitlab_version }}"
+    state: present
+    update_cache: true
+
+- name: Ensure GitLab CLI system users exist
+  loop: "{{ app_users }}"
+  loop_control:
+    loop_var: app_user
+  user:
+    name: "{{ app_user }}"
+    comment: "CLI admin for GitLab"
+    password: "{{ app_user_pass | password_hash('sha512') }}"
+    shell: /bin/bash
+    create_home: yes
+
+- name: Configure GitLab external database and registry settings
+  template:
+    src: gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reconfigure GitLab
+
+- name: Ensure GitLab is enabled and started
+  command: gitlab-ctl start
+  become: true
+

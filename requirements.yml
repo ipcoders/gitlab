@@ -1,0 +1,6 @@
+---
+# requirements.yml
+collections:
+  - name: community.crypto
+    version: ">=2.0.0"
+

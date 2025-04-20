@@ -1,4 +1,12 @@
 ---
+- name: Cleanup any previous PostgreSQL installation
+  become: true
+  shell: |
+    systemctl stop postgresql || true
+    rm -rf /etc/postgresql /var/lib/postgresql /var/log/postgresql
+  args:
+    warn: false
+
 - name: Ensure required common packages are installed
   apt:
     name: "{{ packages_common }}"
