@@ -34,11 +34,21 @@
     filename: "pgdg"
     update_cache: true
 
+- name: Initialize PostgreSQL version fact
+  set_fact:
+    postgresql_version_major: "{{ postgresql_version_full.split('.')[0] }}"
+
 - name: Install PostgreSQL 16.8 packages
   apt:
     name: "{{ packages_postgres }}"
     state: present
     update_cache: true
+
+- name: Initialize PostgreSQL cluster (if not already present)
+  command: "pg_createcluster {{ postgresql_version_major }} main"
+  args:
+    creates: "/etc/postgresql/{{ postgresql_version_major }}/main"
+  become: true
 
 - name: Ensure PostgreSQL service is running and enabled
   service:
