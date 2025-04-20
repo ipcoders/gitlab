@@ -3,7 +3,8 @@
   become: true
   shell: |
     gitlab-ctl stop || true
-    rm -rf /etc/gitlab /var/opt/gitlab /var/log/gitlab
+    rm -rf /etc/gitlab /var/opt/gitlab /var/log/gitlab /opt/gitlab
+    rm -rf /run/gitlab /run/lock/gitlab*
 
 - name: Install required Ansible collections
   ansible.builtin.command:
@@ -88,6 +89,10 @@
   notify: Reconfigure GitLab
 
 - name: Ensure GitLab is enabled and started
-  command: gitlab-ctl start
+  command: /opt/gitlab/bin/gitlab-ctl start
+  become: true
+
+- name: Force GitLab reconfiguration (always runs)
+  command: /opt/gitlab/bin/gitlab-ctl reconfigure
   become: true
 
