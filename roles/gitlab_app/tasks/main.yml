@@ -4,8 +4,6 @@
   shell: |
     gitlab-ctl stop || true
     rm -rf /etc/gitlab /var/opt/gitlab /var/log/gitlab
-  args:
-    warn: false
 
 - name: Install required Ansible collections
   ansible.builtin.command:

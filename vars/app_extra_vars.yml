@@ -13,7 +13,7 @@ packages_common:
   - python3-apt
   
 # External PostgreSQL DB
-external_db_host: 172.31.0.100        
+external_db_host: "3.94.98.122"     
 external_db_user: gitlab
 external_db_pass: gtt_pass
 external_db_name: gitlabhq_production
