@@ -1,6 +1,11 @@
 ---
 install_type: db
 
+# CLI SSH users
+app_users:
+  - equintana
+app_user_pass: gtt_pass
+
 postgresql_version_major: "16"
 postgresql_version_full: "16.8"
 

@@ -4,14 +4,23 @@
   shell: |
     systemctl stop postgresql || true
     rm -rf /etc/postgresql /var/lib/postgresql /var/log/postgresql
-  args:
-    warn: false
 
 - name: Ensure required common packages are installed
   apt:
     name: "{{ packages_common }}"
     state: present
     update_cache: true
+
+- name: Ensure CLI system users exist
+  loop: "{{ app_users }}"
+  loop_control:
+    loop_var: app_user
+  user:
+    name: "{{ app_user }}"
+    comment: "CLI admin"
+    password: "{{ app_user_pass | password_hash('sha512') }}"
+    shell: /bin/bash
+    create_home: yes
 
 - name: Add PostgreSQL GPG key using signed-by
   apt_key:
