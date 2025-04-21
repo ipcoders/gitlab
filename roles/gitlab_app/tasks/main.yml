@@ -2,9 +2,38 @@
 - name: Cleanup any previous GitLab installation (safer purge)
   become: true
   shell: |
-    systemctl stop gitlab-runsvdir || true
     gitlab-ctl stop || true
-    apt-get purge -y gitlab-ce || true
+
+- name: Stop service if running
+  become: true
+  service:
+    name: gitlab-runsvdir
+    state: stopped
+    enabled: false
+  ignore_errors: true
+
+- name: Remove GitLab directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: absent
+    force: true
+  loop:
+    - /etc/gitlab
+    - /var/opt/gitlab
+    - /var/log/gitlab
+    - /var/run/gitlab
+    - /opt/gitlab
+  ignore_errors: true
+
+- name: Purge Gitlab packages
+  become: true
+  apt:
+    name: "gitlab-ce"
+    state: absent
+    purge: true
+    autoremove: true
+  ignore_errors: true
 
 - name: Install required Ansible collections
   ansible.builtin.command:
@@ -14,13 +43,13 @@
   changed_when: false
 
 - name: Ensure required common packages are installed
-  apt:
+  ansible.builtin.apt:
     name: "{{ packages_common }}"
     state: present
     update_cache: true
 
 - name: Ensure GitLab certs directory exists
-  file:
+  ansible.builtin.file:
     path: /etc/gitlab/certs
     state: directory
     owner: root
@@ -63,7 +92,7 @@
     validate_certs: no
 
 - name: Install GitLab CE pinned version
-  apt:
+  ansible.builtin.apt:
     name: "{{ gitlab_edition }}={{ gitlab_version }}"
     state: present
     update_cache: true
@@ -78,6 +107,12 @@
     password: "{{ app_user_pass | password_hash('sha512') }}"
     shell: /bin/bash
     create_home: yes
+
+- name: Start GitLab Runit supervision process
+  systemd:
+    name: gitlab-runsvdir
+    enabled: true
+    state: started
 
 - name: Configure GitLab external database and registry settings
   template:

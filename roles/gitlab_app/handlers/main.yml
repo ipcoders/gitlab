@@ -1,6 +1,8 @@
 ---
 # handlers file for gitlab_app
+# Handler
 - name: Reconfigure GitLab
-  command: gitlab-ctl reconfigure
+  command: /opt/gitlab/bin/gitlab-ctl reconfigure
   become: true
-
+  environment:
+    PATH: "/opt/gitlab/bin:/opt/gitlab/embedded/bin:{{ ansible_env.PATH }}"

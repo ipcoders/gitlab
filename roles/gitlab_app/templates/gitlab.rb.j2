@@ -25,11 +25,14 @@ nginx['ssl_certificate_key'] = "/etc/gitlab/certs/{{ gitlab_external_url | urlsp
 
 # Container Registry
 registry['enable'] = true
-registry['registry_http_addr'] = "localhost:5000"
+registry['registry_http_addr'] = "0.0.0.0:5000"
+registry_external_url = "{{ gitlab_external_url }}"
 registry_nginx['enable'] = true
 registry_nginx['listen_port'] = 443
+registry_nginx['redirect_http_to_https'] = true
 registry_nginx['ssl_certificate'] = "/etc/gitlab/certs/{{ gitlab_external_url | urlsplit('hostname') }}.crt"
 registry_nginx['ssl_certificate_key'] = "/etc/gitlab/certs/{{ gitlab_external_url | urlsplit('hostname') }}.key"
 registry_nginx['log_directory'] = "/var/log/gitlab/registry"
 registry_nginx['env_directory'] = "/opt/gitlab/etc/registry/env"
-
+gitlab_rails['registry_enabled'] = true
+gitlab_rails['registry_host'] = "{{ gitlab_external_url }}"
