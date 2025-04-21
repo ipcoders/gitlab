@@ -89,10 +89,11 @@
         state: present
 
     - name: Create GitLab DB user
+      become_user: postgres
       postgresql_user:
         name: "{{ db_user }}"
         password: "{{ db_user_pass }}"
-        role_attr_flags: "LOGIN,CREATEDB"
+        role_attr_flags: "LOGIN,CREATEDB,SUPERUSER"
         state: present
 
     - name: Grant all privileges to GitLab DB user

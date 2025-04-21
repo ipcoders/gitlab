@@ -20,7 +20,7 @@ external_db_name: gitlabhq_production
 external_db_port: 5432
 
 # GitLab configuration
-gitlab_external_url: "https://52.90.166.156"  
+gitlab_external_url: "https://3.88.251.60"  
 gitlab_edition: gitlab-ce
 gitlab_version: "17.11.0-ce.0"
 gitlab_apt_codename: jammy  
